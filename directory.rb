@@ -7,7 +7,12 @@ def input_students
 
   while !name.empty? do
     students << {name: name, cohort: :november}
-    puts "Now we have #{students.count} students"
+    if students.count == 1
+      puts "Now we have #{students.count} student"
+    else
+      puts "Now we have #{students.count} students"
+    end
+    
     name = gets.chomp
   end
   students
@@ -18,10 +23,14 @@ def print_header
   puts "-" * 10
 end
 def print(students)
-  students.each { |student| puts "#{student[:name]} (#{student[:cohort]} cohort)" }
+  students.each_with_index { |student, index| puts "#{index + 1}. #{student[:name]} (#{student[:cohort]} cohort)" }
 end
-def print_footer(names)
-  puts "Overall, we have #{names.count} great students"
+def print_footer(students)
+  if students.count == 1
+    puts "Overall, we have #{students.count} great student"
+  else
+    puts "Overall, we have #{students.count} great students"
+  end
 end
 
 students = input_students
