@@ -3,7 +3,7 @@ def input_students
   puts "Please enther the names of the students"
   puts "To finish, just hit return twice"
   students = []
-  name = gets.chomp
+  name = gets.gsub("\n","")
 
   while !name.empty? do
     students << {name: name, cohort: :november}
@@ -13,7 +13,8 @@ def input_students
       puts "Now we have #{students.count} students"
     end
     
-    name = gets.chomp
+    name = gets
+    name = name.gsub("\n","")
   end
   students
 end
@@ -33,30 +34,27 @@ def print_footer(students)
   end
 end
 
+students = input_students
+#puts students.count
+if students.count == 0
+  puts "There are no students in the Directory"
+else
+  print_header
+  print(students)
+  print_footer(students)
+end
 
-
+=begin
 def interactive_menu
-  students = []
   loop do
     puts "1. Input the students"
     puts "2. Show the students"
     puts "9. Exit"
     
     selection = gets.chomp
-
-    case selection 
-    when "1"
-      students = input_students
-    when "2"
-      print_header
-      print(students)
-      print_footer(students)
-    when "9"
-      exit
-    else
-      puts "I don't know what you meant, please try again."
-    end
   end
 end
+=end
 
-interactive_menu
+
+
