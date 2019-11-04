@@ -14,7 +14,7 @@ def input_students
     else
       puts "Now we have #{@students.count} students"
     end
-    name = gets.chomp
+    name = STDIN.gets.chomp
   end
   @students
 end
@@ -64,7 +64,7 @@ end
 def exit_check
   if @students.count > @saved
     puts "Students added since last save, are you sure you want to quit? (y/n)"
-    input = gets.chomp
+    input = STDIN.gets.chomp
     while true
       if input == "Y" || input == "y" 
         exit
@@ -81,7 +81,7 @@ end
 def interactive_menu
   loop do
     print_menu
-    selection = gets.chomp
+    selection = STDIN.gets.chomp
     case selection 
     when "1"
       @students = input_students
@@ -113,7 +113,18 @@ def save_students
   pause_program
 end
 
-def load_students
+def try_load_students
+  filename = ARGV.first
+  return if filename.nil?
+  if File.exists?(filename)
+    load_students(filename)
+  else
+    puts "#{filename} doesn't exist"
+    exit
+  end
+end
+
+def load_students(filename = "students.csv")
   file = File.open("students.csv")
   file.readlines.each do |line|
     name, cohort = line.chomp.split(",")
@@ -122,15 +133,15 @@ def load_students
   @saved = @students.count
   file.close
   clear_terminal
-  puts "#{@students.count} Students loaded from 'students.csv'"
+  puts "#{@students.count} Students loaded from #{filename}"
   pause_program
 end
 
 def pause_program
   puts
   puts "Press enter to continue"
-  pause = gets
+  pause = STDIN.gets
 end
 
-
+try_load_students
 interactive_menu
