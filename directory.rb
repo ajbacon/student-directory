@@ -1,6 +1,8 @@
 @students = []
+@saved = 0
 # get user input for student names
 def input_students
+  clear_terminal
   puts "Please enter the names of the students"
   puts "To finish, just hit return twice"
   name = gets.chomp
@@ -12,7 +14,6 @@ def input_students
     else
       puts "Now we have #{@students.count} students"
     end
-    
     name = gets.chomp
   end
   @students
@@ -34,6 +35,12 @@ def print_footer
 end
 
 def print_menu
+  clear_terminal
+  puts "MAIN MENU"
+  puts "---------"
+  puts
+  puts "Please Select one of the following options:"
+  puts
   puts "1. Input the students"
   puts "2. Show the students"
   puts "3. Save the list to students.csv"
@@ -43,10 +50,32 @@ def print_menu
 end
 
 def show_students
+  clear_terminal
   print_header
   print_students_list
   print_footer
-  puts
+  pause_program
+end
+
+def clear_terminal
+  system("cls") || system("clear")
+end
+
+def exit_check
+  if @students.count > @saved
+    puts "Students added since last save, are you sure you want to quit? (y/n)"
+    input = gets.chomp
+    while true
+      if input == "Y" || input == "y" 
+        exit
+      elsif input == "N" || input == "n"
+        return
+      else
+      end
+    end
+  else
+    exit
+  end
 end
 
 def interactive_menu
@@ -63,7 +92,7 @@ def interactive_menu
     when "4"
       load_students
     when "9"
-      exit
+      exit_check
     else
       puts "I don't know what you meant, please try again."
     end
@@ -77,9 +106,11 @@ def save_students
     csv_line = student_data.join(",")
     file.puts csv_line
   end
+  @saved = @students.count
   file.close
+  clear_terminal
   puts "Students saved to 'students.csv'"
-  puts
+  pause_program
 end
 
 def load_students
@@ -88,9 +119,18 @@ def load_students
     name, cohort = line.chomp.split(",")
     @students << {name: name, cohort: cohort.to_sym}
   end
+  @saved = @students.count
   file.close
+  clear_terminal
   puts "#{@students.count} Students loaded from 'students.csv'"
-  puts
+  pause_program
 end
+
+def pause_program
+  puts
+  puts "Press enter to continue"
+  pause = gets
+end
+
 
 interactive_menu
