@@ -76,6 +76,4 @@ def save_students
   puts "Students saved to 'students.csv'"
 end
 
-
-
 interactive_menu
