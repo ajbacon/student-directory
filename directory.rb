@@ -1,12 +1,11 @@
 #---------------------------------------
-#
 # comments
 # this file will continue to be updated with additional exercises from steps 8 & 14
 # 
 # code getting slightly unruly, can group into modules?
 # think about creating classes? How to go about this?
 # Is there a better way to deal with the case/when or if/elsif
-#
+# Error handling refactoring required for save and load file
 #
 #---------------------------------------
 
@@ -79,7 +78,7 @@ def print_menu
   puts
   puts "1. Input the students"
   puts "2. Show the students"
-  puts "3. Save the list to students.csv"
+  puts "3. Save to file"
   puts "4. Load the list from students.csv"
   puts "5. Select Default Cohort (current: #{@default_cohort})"
   puts "9. Exit"
@@ -145,7 +144,18 @@ end
 
 # save the students to file
 def save_students
-  File.open("students.csv", "w") do |file|
+  clear_terminal
+  puts "SAVE FILE"
+  puts "-" * "SAVE FILE".length
+  puts
+  list_of_files = list_csv_files
+  if list_of_files.empty?
+    filename = user_enter_filename
+  else
+    filename = select_filename(list_of_files)
+  end
+  puts
+  File.open(filename, "w") do |file|
     file.puts @default_cohort
     @students.each do |student| 
       student_data = [student[:name], student[:cohort]]
@@ -155,13 +165,14 @@ def save_students
   end
   @saved = @students.count
   #file.close
-  clear_terminal
-  puts "Students saved to 'students.csv'"
+  puts
+  puts "Students saved to '#{filename}'"
   pause_program
 end
 
  # load the students from file
 def load_students(filename = "students.csv")
+
   File.open("students.csv","r") do |file|
     stored_cohort = file.readline.chomp
     set_default_cohort(stored_cohort.to_sym)
@@ -180,27 +191,22 @@ end
 # try loading students from startup
 def try_load_students
   filename = ARGV.first
-  return empty_args if filename.nil?
-  if File.exists?(filename)
+  if filename.nil?
+    puts "No directory specified on start-up, empty directory will be opened."
+    open_empty_directory
+  elsif !File.exists?(filename)
+    puts "Directory specified on start-up does not exist, empty directory will be opened."
+    open_empty_directory
+  else
     load_students(filename)
     interactive_menu
-  else
-    puts "#{filename} doesn't exist"
-    exit
   end
 end
 
-def empty_args
-  if File.exists?("students.csv")
-    load_students
-    interactive_menu
-  else
-    clear_terminal
-    puts "No default student directory found, empty directory will be opened."
-    set_default_cohort
-    pause_program
-    interactive_menu
-  end
+def open_empty_directory
+  set_default_cohort
+  pause_program
+  interactive_menu
 end
 
 # pause program after printing information
@@ -225,25 +231,73 @@ def cohort_menu
   clear_terminal
   puts "Select the cohort to apply to student inputs:"
   puts
-  @months.each_with_index do |month, index|
-    puts "#{index + 1}. #{month.capitalize}"
-  end
+  @months.each_with_index{ |month, index| puts "#{index + 1}. #{month.capitalize}" }
   puts
 end
 
-=begin
-def select_filename
-  list_files = list_csv_files
-
+def select_filename(list_of_files)
+  puts "Please choose file to save or press return to enter a new filename."
+  selection = STDIN.gets.chomp
+  return selection.empty? ? user_enter_filename : list_of_files[selection.to_i - 1]
 end
 
 def list_csv_files
   csv_files = Dir.glob("*.csv")
+  puts "Available student directories:"
+  puts dashes ("Available student directories:".length)
+  puts
   if csv_files.count > 0
-    csv_file.each_with_index{ |index, file| puts "#{index}. #{file}"}
-    puts "Please choose file to save or press return to enter a new filename."
-    
+    csv_files.each_with_index{ |file, index| puts "#{index + 1}. #{file}" }
+    puts
+  else
+    puts "There are no student directories in the working folder."
+    puts
+  end
+  puts dashes ("Available student directories:".length)
+  csv_files
 end
-=end
+
+def dashes(num)
+  "-" * num
+end
+
+def user_enter_filename
+  puts
+  puts "Please enter filename with extension '*.csv'"
+  puts
+  print "filename: "
+  STDIN.gets.chomp
+  # re-factor: add capability to check correct file extension
+end
 
 try_load_students
+
+#---------------------------------------------------------------------------------------------------------------------
+
+=begin
+1. After we added the code to load the students from file, we ended up with adding the students to @students in two places. The lines in load_students() and input_students() are almost the same. This violates the DRY (Don't Repeat Yourself) principle. How can you extract them into a method to fix this problem?
+done
+
+2. How could you make the program load students.csv by default if no file is given on startup? Which methods would you need to change?
+done - but eventually removed by implementing 6.
+
+3. Continue refactoring the code. Which method is a bit too long? What method names are not clear enough? Anything else you'd change to make your code look more elegant? Why?
+Are you ever done re-factoring?!?!
+
+4. Right now, when the user choses an option from our menu, there's no way of them knowing if the action was successful. Can you fix this and implement feedback messages for the user?
+done - also cleared the terminal between menus
+
+5. The filename we use to save and load data (menu items 3 and 4) is hardcoded. Make the script more flexible by asking for the filename if the user chooses these menu items.
+
+
+6. We are opening and closing the files manually. Read the documentation of the File class to find out how to use a code block (do...end) to access a file, so that we didn't have to close it explicitly (it will be closed automatically when the block finishes). Refactor the code to use a code block.
+done
+
+7. We are de-facto using CSV format to store data. However, Ruby includes a library to work with the CSV files that we could use instead of working directly with the files. Refactor the code to use this library.
+Not done
+
+8. Write a short program that reads its own source code (search StackOverflow to find out how to get the name of the currently executed file) and prints it on the screen.
+rescue => exception
+done - although my solution not a pure quine as it reads the file from the filesystem.
+  
+=end
